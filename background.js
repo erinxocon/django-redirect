@@ -1,9 +1,8 @@
 (function() {
-    const URL_REGEX = /^https?:\/\/docs\.djangoproject\.com\/en\/2[^\/]*?\/(.*)/;
-    const URL_REPLACEMENT = "https://docs.djangoproject.com/en/1.11/$1";
+    const URL_REGEX = /^https?:\/\/docs\.djangoproject\.com\/en\/[^\/]*?\/(.*)/;
 
-    let isEnabled = true;
-    updateIsEnabled();
+    let version = "dev";
+    updateVersion();
 
     /**
      * Check whether given URL returns 200 HTTP status code and redirects
@@ -23,21 +22,22 @@
         let request = new XMLHttpRequest();
         request.onreadystatechange = function() {
             if (request.readyState === 4) {
+                localStorage.setItem(oldUrl, true);
+                browserAPI.api.pageAction.show(tabId);
+                sendResponse(url);
                 // DONE
-                if (request.status === 200) {
-                    localStorage.setItem(oldUrl, true);
-                    browserAPI.api.pageAction.show(tabId);
-                    sendResponse(url);
-                } else {
-                    browserAPI.api.pageAction.setTitle({
-                        tabId: tabId,
-                        title:
-                            "Could not redirect (HTTP status code: " +
-                            request.status +
-                            ")"
-                    });
-                    sendResponse(null);
-                }
+                // if (request.status === 200) {
+
+                // } else {
+                //     browserAPI.api.pageAction.setTitle({
+                //         tabId: tabId,
+                //         title:
+                //             "Could not redirect (HTTP status code: " +
+                //             request.status +
+                //             ")"
+                //     });
+                //     sendResponse(null);
+                // }
             }
         };
         request.open("HEAD", url, true);
@@ -52,12 +52,12 @@
         function(details) {
             let url = details.url;
             alert(url);
-            if (isEnabled && localStorage.getItem(url)) {
+            if (version && localStorage.getItem(url)) {
                 return { redirectUrl: url.replace(URL_REGEX, URL_REPLACEMENT) };
             }
         },
         {
-            urls: ["*://docs.python.org/2*"],
+            urls: ["*://docs.djangoproject.com/en/*"],
             types: ["main_frame"]
         },
         ["blocking"]
@@ -66,9 +66,9 @@
     /**
      * Update isUpdate variable value from storage.local.
      */
-    function updateIsEnabled() {
-        browserAPI.api.storage.local.get({ isEnabled: true }, data => {
-            isEnabled = data.isEnabled;
+    function updateVersion() {
+        browserAPI.api.storage.local.get("django_version", data => {
+            version = data.django_version;
         });
     }
 
@@ -76,21 +76,29 @@
      * Set new isUpdate variable value and store it in storage.local.
      * @param {boolean} enabled whether or not redirecting is currently enabled
      */
-    function setEnabled(enabled) {
-        isEnabled = enabled;
-        browserAPI.api.storage.local.set({ isEnabled: enabled });
+    function setVersion(django_version) {
+        version = django_version;
+        browserAPI.api.storage.local.set({ django_version: version });
     }
 
     browserAPI.api.runtime.onMessage.addListener(
         (request, sender, sendResponse) => {
+            const URL_REPLACEMENT = `https://docs.djangoproject.com/en/${version}/$1`;
+            // if (URL_REPLACEMENT.includes(version)) {
+            //     return;
+            // } else
+
             if (request.action === "redirect") {
                 let tabId = sender.tab.id;
                 browserAPI.api.pageAction.show(tabId);
-                if (!isEnabled) {
+                if (!version) {
                     return;
                 }
 
-                if (URL_REGEX.test(sender.url)) {
+                if (
+                    !sender.url.includes(version) &&
+                    URL_REGEX.test(sender.url)
+                ) {
                     browserAPI.api.pageAction.setTitle({
                         tabId: tabId,
                         title: "Redirecting..."
@@ -104,10 +112,11 @@
 
                     return true;
                 }
-            } else if (request.action === "isEnabled") {
-                sendResponse(isEnabled);
-            } else if (request.action === "setEnabled") {
-                setEnabled(request.enabled);
+            } else if (request.action === "getVersion") {
+                sendResponse(version);
+            } else if (request.action === "setVersion") {
+                console.log(request.django_version);
+                setVersion(request.django_version);
             }
         }
     );
