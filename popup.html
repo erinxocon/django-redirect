@@ -2,11 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>py3redirect popup</title>
+    <title>django-redirect popup</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <button id="toggleRedirect" type="button"></button>
+    <!-- <button id="toggleRedirect" type="button"></button> -->
+    <form id="version">
+        <input type="radio" name="django_version" id="1.7" value="1.7">
+        <label for="1.7">1.7</label>
+        <br />
+        <input type="radio" name="django_version" id="1.8" value="1.8">
+        <label for="1.8">1.8</label>
+        <br />
+        <input type="radio" name="django_version" id="1.9" value="1.9">
+        <label for="1.9">1.9</label>
+        <br />
+        <input type="radio" name="django_version" id="1.10" value="1.10">
+        <label for="1.10">1.10</label>
+        <br />
+        <input type="radio" name="django_version" id="1.11" value="1.11">
+        <label for="1.11">1.11</label>
+        <br />
+        <input type="radio" name="django_version" id="2.0" value="2.0">
+        <label for="2.0">2.0</label>
+        <br />
+        <input type="radio" name="django_version" id="2.1" value="2.1">
+        <label for="2.1">2.1</label>
+        <br />
+        <input type="radio" name="django_version" id="dev" value="dev">
+        <label for="dev">dev</label>
+    </form>
     <script src="browser-wrapper.js"></script>
     <script src="popup.js"></script>
 </body>

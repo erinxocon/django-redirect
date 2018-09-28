@@ -1,28 +1,36 @@
-(function () {
-    let toggleRedirectBtn = document.getElementById("toggleRedirect");
-    let isEnabled = true;
+(function() {
+    let radios = document.forms["version"].elements["django_version"];
 
-    function updateToggleRedirectBtn() {
-        toggleRedirectBtn.classList.remove("warning", "success");
-        if (isEnabled) {
-            toggleRedirectBtn.classList.add("warning");
-            toggleRedirectBtn.textContent = "Disable redirecting temporarily";
-        } else {
-            toggleRedirectBtn.classList.add("success");
-            toggleRedirectBtn.textContent = "Re-enable redirecting";
-        }
+    // function updateToggleRedirectBtn() {
+    //     toggleRedirectBtn.classList.remove("warning", "success");
+    //     if (isEnabled) {
+    //         toggleRedirectBtn.classList.add("warning");
+    //         toggleRedirectBtn.textContent = "Disable redirecting temporarily";
+    //     } else {
+    //         toggleRedirectBtn.classList.add("success");
+    //         toggleRedirectBtn.textContent = "Re-enable redirecting";
+    //     }
+    // }
+
+    function setVersion(django_version) {
+        version = django_version;
+        console.log(version);
+        browserAPI.sendMessage({
+            action: "setVersion",
+            django_version: version
+        });
     }
 
-    function setEnabled(enabled) {
-        isEnabled = enabled;
-        updateToggleRedirectBtn();
-        browserAPI.sendMessage({action: "setEnabled", enabled: isEnabled});
-    }
-
-    browserAPI.sendMessage({action: "isEnabled"}, enabled => {
-        isEnabled = enabled;
-        updateToggleRedirectBtn();
+    browserAPI.sendMessage({ action: "getVersion" }, django_version => {
+        version = django_version;
     });
 
-    toggleRedirectBtn.addEventListener("click", () => setEnabled(!isEnabled));
+    for (let i = 0; i < radios.length; i++) {
+        radios[i].onclick = function() {
+            setVersion(this.value);
+            console.log(this.value);
+        };
+    }
+
+    console.debug("popup.js");
 })();
