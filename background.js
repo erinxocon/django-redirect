@@ -51,7 +51,6 @@
     browserAPI.api.webRequest.onBeforeRequest.addListener(
         function(details) {
             let url = details.url;
-            alert(url);
             if (version && localStorage.getItem(url)) {
                 return { redirectUrl: url.replace(URL_REGEX, URL_REPLACEMENT) };
             }
@@ -84,16 +83,10 @@
     browserAPI.api.runtime.onMessage.addListener(
         (request, sender, sendResponse) => {
             const URL_REPLACEMENT = `https://docs.djangoproject.com/en/${version}/$1`;
-            // if (URL_REPLACEMENT.includes(version)) {
-            //     return;
-            // } else
 
             if (request.action === "redirect") {
                 let tabId = sender.tab.id;
                 browserAPI.api.pageAction.show(tabId);
-                if (!version) {
-                    return;
-                }
 
                 if (
                     !sender.url.includes(version) &&
@@ -115,7 +108,6 @@
             } else if (request.action === "getVersion") {
                 sendResponse(version);
             } else if (request.action === "setVersion") {
-                console.log(request.django_version);
                 setVersion(request.django_version);
             }
         }
